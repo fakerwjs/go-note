@@ -321,3 +321,234 @@
 ### Q80：如何实现简单反向代理？
 **答案:** 使用 `httputil.ReverseProxy`，设置 Director、Transport 和 Handler。
 
+
+
+
+# 中高级 Go + DevOps 面试题清单（含参考答案提示）
+
+## **一、Go语言与系统编程（核心开发能力）**
+
+### 1. Goroutine/Channel
+
+**题目：**
+
+* 请说明Go中Goroutine的调度模型（G-M-P）以及Channel是如何实现的。
+* 如何避免在高并发场景下Channel阻塞或死锁？请给出示例。
+
+**参考答案提示：**
+
+* **G-M-P模型**：G（Goroutine）、M（OS线程）、P（Processor）。调度器通过P分配G到M上执行。
+* **Channel机制**：底层使用环形队列和锁，支持阻塞和非阻塞操作。
+* **避免死锁方法**：合理关闭Channel、使用select控制多路Channel、避免循环等待。
+
+**示例代码：**
+
+```go
+select {
+case ch <- val:
+case <-time.After(time.Second):
+    fmt.Println("timeout")
+}
+```
+
+---
+
+### 2. 内存与性能优化
+
+**题目：**
+
+* Go内存分配机制是怎样的？如何减少GC压力？
+* 如何进行Go程序的性能剖析？
+
+**参考答案提示：**
+
+* Go使用堆栈分离、逃逸分析，GC采用并发标记清除。
+* **优化方式**：减少短生命周期对象分配、对象复用（sync.Pool）、合理切片容量。
+* **性能剖析工具**：pprof，分析CPU、内存、阻塞、goroutine。
+
+---
+
+### 3. 微服务与接口设计
+
+**题目：**
+
+* 设计一个Go微服务API访问MySQL/Redis，如何保证数据一致性？
+* gRPC与REST区别及使用场景。
+
+**参考答案提示：**
+
+* 事务一致性：可用分布式事务或最终一致性方案。
+* gRPC优点：高性能、强类型、双向流；REST：通用性强，调试方便。
+
+---
+
+### 4. Go实战题
+
+**题目：**
+
+* 实现带超时的Channel读取函数。
+* 用Go实现一个Token Bucket限流器。
+
+**参考答案提示：**
+
+* 可用`select`+`time.After`实现超时。
+* Token Bucket使用channel或定时器控制请求速率。
+
+---
+
+## **二、微服务架构与分布式系统**
+
+### 1. 微服务设计
+
+**题目：**
+
+* 如何使用etcd/Consul进行服务发现？
+* 服务间调用出现雪崩效应如何防护？
+
+**参考答案提示：**
+
+* etcd/Consul存储服务信息，客户端/代理轮询或watch。
+* 防护机制：熔断（circuit breaker）、限流、降级、重试策略。
+
+---
+
+### 2. 分布式存储与缓存
+
+**题目：**
+
+* Redis高并发优化方案？
+* Kafka/RabbitMQ消费模型及消息保证策略。
+
+**参考答案提示：**
+
+* Redis：分片、持久化策略、管道操作、连接池。
+* Kafka：At-most-once/At-least-once/Exactly-once；RabbitMQ：ACK机制、持久化、死信队列。
+
+---
+
+## **三、DevOps / CI/CD**
+
+### 1. CI/CD工具链
+
+**题目：**
+
+* 设计完整CI/CD流水线（GitLab CI/Jenkins/Argo CD）。
+* 流水线失败如何快速定位？
+
+**参考答案提示：**
+
+* 流水线阶段：编译 → 单元测试 → 集成测试 → 构建镜像 → 部署 → 验证。
+* 定位方法：日志分析、单阶段回退、告警通知。
+
+---
+
+### 2. 自动化与脚本能力
+
+**题目：**
+
+* 用Shell/Python实现自动回滚。
+* 监控日志变化触发告警脚本。
+
+**参考答案提示：**
+
+* Shell：使用`inotifywait`监听日志变化，触发rollback命令。
+* Python：用`watchdog`监听文件变化，发送告警。
+
+---
+
+## **四、Kubernetes与云原生**
+
+### 1. 容器与K8s
+
+**题目：**
+
+* Pod、Deployment、ReplicaSet、StatefulSet区别？
+* 如何实现滚动更新和回滚，保证零停机？
+
+**参考答案提示：**
+
+* Deployment管理ReplicaSet，StatefulSet用于有状态服务。
+* 滚动更新：`kubectl rollout` + readinessProbe，回滚：`kubectl rollout undo`。
+
+---
+
+### 2. 高可用与扩展性
+
+**题目：**
+
+* 微服务负载增加如何处理？
+* Horizontal Pod Autoscaler vs Vertical Pod Autoscaler。
+
+**参考答案提示：**
+
+* 扩容：水平扩容增加Pod数量，垂直扩容增加资源。
+* HPA按CPU/自定义指标扩容Pod数量，VPA调整Pod资源请求。
+
+---
+
+## **五、SRE / 系统运维能力**
+
+### 1. Linux与系统优化
+
+**题目：**
+
+* 如何定位CPU/内存/I/O瓶颈？
+* MySQL高并发读写优化方法。
+
+**参考答案提示：**
+
+* 命令：`top`, `htop`, `iostat`, `vmstat`, `perf`.
+* MySQL优化：索引优化、读写分离、缓存、连接池。
+
+---
+
+### 2. 监控与告警
+
+**题目：**
+
+* 设计完整监控体系，包括日志、指标、告警。
+* 微服务健康检查和自动恢复方案。
+
+**参考答案提示：**
+
+* 监控体系：Prometheus + Grafana + Alertmanager + ELK。
+* 健康检查：LivenessProbe/ReadinessProbe + 自动重启/滚动更新。
+
+---
+
+## **六、加分项 / 深度技术**
+
+### 1. CMDB系统建设
+
+**题目：**
+
+* CMDB核心价值和自动同步实现方案。
+
+**参考答案提示：**
+
+* 管理IT资产和配置关系，实现自动同步：API集成 + 定时采集。
+
+### 2. 云原生认证相关
+
+**题目：**
+
+* Pod Network与Service Network区别。
+* 部署Nginx Ingress Controller操作流程。
+
+**参考答案提示：**
+
+* Pod Network：Pod间通信；Service Network：Service虚拟IP访问。
+* 操作流程：创建Namespace → 部署Ingress Controller → 配置Ingress资源。
+
+### 3. 开源贡献/社区经验
+
+**题目：**
+
+* 分享一次开源项目贡献经历及解决的核心问题。
+
+**参考答案提示：**
+
+* 考察技术深度、问题解决能力和团队协作经验。
+
+
+
